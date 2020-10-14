@@ -1,16 +1,16 @@
 <?php
 
 /**
- * Class Give_Mpay_Settings
+ * Class Give_Senangpay_Settings
  *
  * @since 1.0.0
  */
-class Give_Mpay_Settings
+class Give_Senangpay_Settings
 {
 
     /**
      * @access private
-     * @var Give_Mpay_Settings $instance
+     * @var Give_Senangpay_Settings $instance
      */
     private static $instance;
 
@@ -28,7 +28,7 @@ class Give_Mpay_Settings
     private $section_label;
 
     /**
-     * Give_Mpay_Settings constructor.
+     * Give_Senangpay_Settings constructor.
      */
     private function __construct()
     {
@@ -38,7 +38,7 @@ class Give_Mpay_Settings
     /**
      * get class object.
      *
-     * @return Give_Mpay_Settings
+     * @return Give_Senangpay_Settings
      */
     public static function get_instance()
     {
@@ -55,8 +55,8 @@ class Give_Mpay_Settings
     public function setup_hooks()
     {
 
-        $this->section_id = 'mpay';
-        $this->section_label = __('Mpay', 'give-mpay');
+        $this->section_id = 'senangpay';
+        $this->section_label = __('Senangpay', 'give-senangpay');
 
         if (is_admin()) {
             // Add settings.
@@ -90,56 +90,56 @@ class Give_Mpay_Settings
     {
         $current_section = give_get_current_setting_section();
 
-        if ($current_section != 'mpay') {
+        if ($current_section != 'senangpay') {
             return $settings;
         }
 
-        $give_mpay_settings = array(
+        $give_senangpay_settings = array(
             array(
-                'name' => __('Mpay Settings', 'give-mpay'),
-                'id' => 'give_title_gateway_mpay',
+                'name' => __('Senangpay Settings', 'give-senangpay'),
+                'id' => 'give_title_gateway_senangpay',
                 'type' => 'title',
             ),
             array(
-                'name' => __('Merchant ID', 'give-mpay'),
-                'desc' => __('Enter your Merchant ID.', 'give-mpay'),
-                'id' => 'mpay_merchant_id',
+                'name' => __('Merchant ID', 'give-senangpay'),
+                'desc' => __('Enter your Merchant ID.', 'give-senangpay'),
+                'id' => 'senangpay_merchant_id',
                 'type' => 'text',
-                'row_classes' => 'give-mpay-key',
+                'row_classes' => 'give-senangpay-key',
             ),
             array(
-                'name' => __('Secret Key', 'give-mpay'),
-                'desc' => __('Enter your API Secret Key, found in your Mpay Account Settings.', 'give-mpay'),
-                'id' => 'mpay_api_key',
+                'name' => __('Secret Key', 'give-senangpay'),
+                'desc' => __('Enter your API Secret Key, found in your Senangpay Account Settings.', 'give-senangpay'),
+                'id' => 'senangpay_api_key',
                 'type' => 'text',
-                'row_classes' => 'give-mpay-key',
+                'row_classes' => 'give-senangpay-key',
             ),
             array(
-                'name' => __('Bill Description', 'give-mpay'),
-                'desc' => __('Enter description to be included in the bill.', 'give-mpay'),
-                'id' => 'mpay_description',
+                'name' => __('Bill Description', 'give-senangpay'),
+                'desc' => __('Enter description to be included in the bill.', 'give-senangpay'),
+                'id' => 'senangpay_description',
                 'type' => 'text',
-                'row_classes' => 'give-mpay-key',
+                'row_classes' => 'give-senangpay-key',
             ),
             array(
-                'name' => __('Billing Fields', 'give-mpay'),
-                'desc' => __('This option will enable the billing details section for Mpay which requires the donor\'s address to complete the donation. These fields are not required by Mpay to process the transaction, but you may have the need to collect the data.', 'give-mpay'),
-                'id' => 'mpay_collect_billing',
+                'name' => __('Billing Fields', 'give-senangpay'),
+                'desc' => __('This option will enable the billing details section for Senangpay which requires the donor\'s address to complete the donation. These fields are not required by Senangpay to process the transaction, but you may have the need to collect the data.', 'give-senangpay'),
+                'id' => 'senangpay_collect_billing',
                 'type' => 'radio_inline',
                 'default' => 'disabled',
                 'options' => array(
-                    'enabled' => __('Enabled', 'give-mpay'),
-                    'disabled' => __('Disabled', 'give-mpay'),
+                    'enabled' => __('Enabled', 'give-senangpay'),
+                    'disabled' => __('Disabled', 'give-senangpay'),
                 ),
             ),
             array(
                 'type' => 'sectionend',
-                'id' => 'give_title_gateway_mpay',
+                'id' => 'give_title_gateway_senangpay',
             ),
         );
 
-        return array_merge($settings, $give_mpay_settings);
+        return array_merge($settings, $give_senangpay_settings);
     }
 }
 
-Give_Mpay_Settings::get_instance()->setup_hooks();
+Give_Senangpay_Settings::get_instance()->setup_hooks();
