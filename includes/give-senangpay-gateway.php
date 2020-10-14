@@ -1,5 +1,20 @@
 <?php
 
+/**
+ * 
+ * 1. Init payment: process_payment function
+ *    - create_payment function
+ *    - get_senangpay function
+ *    - redirect to senangpay-payment-pg page
+ * 
+ * 2. Verify payment: return_listener function
+ *    - verify all the payment & order data
+ *    - publish_payment function
+ *    - redirect
+ * 
+ */
+
+
 if (!defined('ABSPATH')) {
     exit;
 }
@@ -130,10 +145,10 @@ class Give_Senangpay_Gateway
 
 
     // Check the current payment mode
-    $url = 'https://www.mdex.my/mdex/payment/eCommerce';
+    $url = 'https://app.senangpay.my/payment';
 	if ( give_is_test_mode() ) {
 		// Test mode
-		$url = 'https://pcimdex.mpay.my/mdex2/payment/eCommerce';
+		$url = 'https://sandbox.senangpay.my/payment';
 	}
 
         $payment_id = $this->create_payment($purchase_data);
@@ -150,11 +165,10 @@ class Give_Senangpay_Gateway
         $senangpay_key = $this->get_senangpay($purchase_data);
 
         $name = $purchase_data['user_info']['first_name'] . ' ' . $purchase_data['user_info']['last_name'];
-        $hash_key = $senangpay_key['api_key'];
-        $mid = str_pad( $senangpay_key['merchant_id'], 10, '0', STR_PAD_LEFT );
-        $invno = 'TP'.date("Ymd").'_'.$payment_id;
-        $amt = str_pad(($purchase_data['price'] * 100), 12, '0', STR_PAD_LEFT);
-		$shash = strtoupper( hash( 'sha256', $hash_key . "Continue" . $mid . $invno . $amt ) );
+        $amt = $purchase_data['price'];
+        $detail = 'This is the transaction of givewp with id of ' . $purchase_data['post_data']['give-form-id'] . ' at ' . $purchase_data['date'] . ' with amount due of RM ' . $amt . '.';
+        $order_id = $purchase_data['post_data']['give-form-id']; //using give id
+        $hashed_string = md5($senangpay_key['api_key'] . $detail . $amt . $order_id);
 		
 		// Get the success url.
 		// $return_url = add_query_arg( array(
@@ -163,21 +177,23 @@ class Give_Senangpay_Gateway
 		// ), get_permalink( give_get_option( 'success_page' ) ) );
  
         $parameter = array(
-			'actionUrl' => $url,
-            'secureHash' => $shash,
-            'invno' => $invno,
-			'mid' => $mid,
-            'amt' => $amt,
-            'desc' => substr(trim($senangpay_key['description']), 0, 120),
-            'postURL' => self::get_listener_url($payment_id),
-            'phone' => '+601000000000',
+            'actionUrl' => $url . '/' . $senangpay_key['merchant_id'],
+            'detail' => $detail,
+            'amount' => $amt,
+            'order_id' => $order_id, 
+            'name' => $name,
             'email' => $purchase_data['user_email'],
+            'phone' => '+601000000000', //dummy phone number
+            'hashed_string' => $hashed_string,
+
+            'merchant_id' => $senangpay_key['merchant_id'],
+            'secretkey' => $senangpay_key['api_key'],
+
+            'postURL' => self::get_listener_url($payment_id),
             //'param'	=> 'GiveWP|' . $payment_id,
         );
 
-
         $parameter = apply_filters('give_senangpay_bill_mandatory_param', $parameter, $purchase_data['post_data']);
-
 
         //send to payment page as params
         $payment_page = site_url() . "/senangpay-payment-pg";
