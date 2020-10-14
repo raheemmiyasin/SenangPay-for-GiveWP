@@ -9,7 +9,7 @@
 
 <body>
 	<p>
-		Redirecting to MPAY ...
+		Redirecting to Senangpay ...
 	</p>
 	<form action="<?php echo $_GET['actionUrl'] ?>" method="POST" id="mpay_payment_form">
 		<input type="text" name="detail" value="<?php echo $_GET['detail'] ?>"><br>
