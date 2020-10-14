@@ -103,7 +103,7 @@ class Give_Senangpay_Gateway
 
     private function get_senangpay($purchase_data)
     {
-  //ob_start();
+        //ob_start();
         $form_id = intval($purchase_data['post_data']['give-form-id']);
 
         $custom_donation = give_get_meta($form_id, 'senangpay_customize_senangpay_donations', true, 'global');
@@ -144,12 +144,12 @@ class Give_Senangpay_Gateway
         give_validate_nonce($purchase_data['gateway_nonce'], 'give-gateway');
 
 
-    // Check the current payment mode
-    $url = 'https://app.senangpay.my/payment';
-	if ( give_is_test_mode() ) {
-		// Test mode
-		$url = 'https://sandbox.senangpay.my/payment';
-	}
+        // Check the current payment mode
+        $url = 'https://app.senangpay.my/payment';
+        if ( give_is_test_mode() ) {
+            // Test mode
+            $url = 'https://sandbox.senangpay.my/payment';
+        }
 
         $payment_id = $this->create_payment($purchase_data);
 
