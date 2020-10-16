@@ -277,13 +277,6 @@ class Give_Senangpay_Gateway
             $custom_donation = give_get_meta($form_id, 'senangpay_customize_senangpay_donations', true, 'global');
             $status = give_is_setting_enabled($custom_donation, 'enabled');
 
-            $queryurl = 'https://www.mdex.my/mdex/api/paymentService/queryTransaction/';
-
-            if ( give_is_test_mode() ) {
-                // Test mode
-                $queryurl = 'https://pcimdex.mpay.my/mdex2/api/paymentService/queryTransaction/';
-            }
-
             $payment_amount = give_donation_amount( $payment_id );
 
             if ($status) {
@@ -330,48 +323,6 @@ class Give_Senangpay_Gateway
             }
             else
                 echo 'Hashed value is not correct';
-
-            // $mid         = str_pad( $merchant_id, 10, '0', STR_PAD_LEFT );
-            // $invno       = 'TP'.date("Ymd").'_'.$payment_id;
-            // $amt         = str_pad( $payment_amount * 100, 12, '0', STR_PAD_LEFT );
-            // $shash       = strtoupper( hash( 'sha256', $hash_key . "Continue" . $mid . $invno . $amt ) );
-            // $shash = strtoupper( hash( 'sha256', $hash_key . "Continue" . $mid . $invno . $amt ) );
-
-            // $senangpay_args = array(
-            //     "mid" => $mid,
-            //     "invno" => $invno,
-            //     "amt" => $amt,
-            //     "secureHash" => $shash
-            //     );
-
-            // write_log('Senangpay in listener query data ' . print_r($senangpay_args, true));
-            // write_log('senangpay listener query url' . $queryurl);
-            // $api = wp_remote_post( $queryurl, array(
-            //     'headers' => array( 'Content-Type' => 'application/json'),
-            //     'body' => json_encode( $senangpay_args ),
-            // ) );
-
-            // $data = json_decode( $api['body'], true );
-
-            // // success
-            // if ($data['responseCode'] == '0' && give_get_payment_status($payment_id)) {
-            //     $this->publish_payment($payment_id, $data);
-            // }
-            // if ($data['responseCode'] == '0') {
-            //         $return = add_query_arg(array(
-            //             'payment-confirmation' => 'senangpay',
-            //             'payment-id' => $payment_id,
-            //         ), get_permalink(give_get_option('success_page')));
-            //     } else {
-            //         write_log('senangpay failed:'. $data['responseCode'] . $data['responseDesc']);
-            //         give_record_gateway_error( __( 'Senangpay Error', 'give' ), sprintf(__( $data['responseDesc'], 'give' ), json_encode( $_REQUEST ) ), $payment_id );
-            //         give_set_payment_transaction_id( $payment_id, $data['authCode'] );
-            //        give_update_payment_status( $payment_id, 'failed' );
-            //         give_insert_payment_note( $payment_id, __( $data['responseCode'] . ':' . $data['responseDesc'], 'give' ) );
-            //         $failedUrl = give_get_failed_transaction_uri('?payment-id=' . $payment_id);
-            // 		$failedUrl = str_replace("_wpnonce","_wponce",$failedUrl);
-            //         $return = $failedUrl;
-            //     }
 
             wp_redirect($return);
             exit;
