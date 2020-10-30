@@ -12,6 +12,7 @@
 		Redirecting to Senangpay ...
 	</p>
 	<form action="<?php echo $_GET['actionUrl'] ?>" method="POST" id="senangpay_payment_form">
+		<input type="text" name="recurring_id" value="<?php echo $_GET['recurring_id'] ?>"><br>
 		<input type="text" name="detail" value="<?php echo $_GET['detail'] ?>"><br>
 		<input type="text" name="amount" value="<?php echo $_GET['amount'] ?>"><br>
 		<input type="text" name="order_id" value="<?php echo $_GET['order_id'] ?>"><br>

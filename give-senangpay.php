@@ -90,6 +90,7 @@ if (!class_exists('Give_SenangPay')):
       add_filter('query_vars', array($this, 'query_vars'), 10, 1);
       add_action('parse_request', array($this, 'parse_request'), 10, 1);
       register_activation_hook(__FILE__, array($this, 'flush_rules' ));
+      add_filter( 'give_recurring_available_gateways', [ $this, 'add_senangpay_recurring_support' ], 99 );
 
     }
 
@@ -105,29 +106,44 @@ if (!class_exists('Give_SenangPay')):
 
       add_filter('give_payment_gateways', array($this, 'register_gateway'));
 
+      // Load the file only when recurring donations addo-on is enabled.
+			if ( defined( 'GIVE_RECURRING_VERSION' ) ) {
+				require_once GIVE_SENANGPAY_PLUGIN_DIR . 'includes/class-senangpay-recurring.php';
+			}
+      
       $this->includes();
     }
 
+    /**
+		 * Add recurring support for senangpay.
+		 *
+		 */
+		public function add_senangpay_recurring_support( $gateways ) {
+			$gateways['senangpay'] = 'Senangpay_Recurring';
+
+			return $gateways;
+		}
+
     public function rewrite_rules(){
       add_rewrite_rule('senangpay-payment-pg/?$', 'index.php?senangpay-payment-pg=true', 'top');
-  }
+    }
 
-  public function flush_rules(){
-      $this->rewrite_rules();
-      flush_rewrite_rules();
-  }
+    public function flush_rules(){
+        $this->rewrite_rules();
+        flush_rewrite_rules();
+    }
 
-  public function query_vars($vars){
-      $vars[] = 'senangpay-payment-pg';
-      return $vars;
-  }
+    public function query_vars($vars){
+        $vars[] = 'senangpay-payment-pg';
+        return $vars;
+    }
 
-  public function parse_request($wp){
-      if ( array_key_exists( 'senangpay-payment-pg', $wp->query_vars ) ){
-          include plugin_dir_path(__FILE__) . 'senangpay-payment-pg.php';
-          exit();
-      }
-  }
+    public function parse_request($wp){
+        if ( array_key_exists( 'senangpay-payment-pg', $wp->query_vars ) ){
+            include plugin_dir_path(__FILE__) . 'senangpay-payment-pg.php';
+            exit();
+        }
+    }
 
     /**
      * The primary sanity check, automatically disable the plugin on activation if it doesn't

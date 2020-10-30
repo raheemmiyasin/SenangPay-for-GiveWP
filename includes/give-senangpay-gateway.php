@@ -146,12 +146,17 @@ class Give_Senangpay_Gateway
 
         // Check the current payment mode
         $url = 'https://app.senangpay.my/payment';
+        $url2 = 'https://api.senangpay.my/recurring/payment/';
         if ( give_is_test_mode() ) {
             // Test mode
             $url = 'https://sandbox.senangpay.my/payment';
+            $url2 = 'https://api.sandbox.senangpay.my/recurring/payment';
         }
 
         $payment_id = $this->create_payment($purchase_data);
+
+        //get subscription data if recurring
+        $subscription_id = ! empty( $get_data['subscription_id'] ) ? intval( $get_data['subscription_id'] ) : false;
 
         // Check payment.
         if (empty($payment_id)) {
@@ -177,7 +182,8 @@ class Give_Senangpay_Gateway
 		// ), get_permalink( give_get_option( 'success_page' ) ) );
  
         $parameter = array(
-            'actionUrl' => $url . '/' . $senangpay_key['merchant_id'],
+            'actionUrl' => (!$subscription_id) ? $url . '/' . $senangpay_key['merchant_id'] : $url2 . '/' . $senangpay_key['merchant_id'],
+            'recurring_id' => ($subscription_id) ? '160396611172' : false, //baiki balik nanti, letak ni dekat box senangpay settings dkt admin.
             'detail' => $detail,
             'amount' => $amt,
             'order_id' => $order_id, 
@@ -196,7 +202,11 @@ class Give_Senangpay_Gateway
         $parameter = apply_filters('give_senangpay_bill_mandatory_param', $parameter, $purchase_data['post_data']);
 
         //send to payment page as params
-        $payment_page = site_url() . "/senangpay-payment-pg";
+        if(!$subscription_id){
+            $payment_page = site_url() . "/senangpay-payment-pg";
+        }else {
+            $payment_page = site_url() . "/senangpay-payment-recurring-pg";
+        }
         
 		write_log('Senangpay in post data ' . print_r($parameter, true));
      
