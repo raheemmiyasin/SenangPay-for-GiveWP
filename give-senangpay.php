@@ -105,11 +105,6 @@ if (!class_exists('Give_SenangPay')):
       }
 
       add_filter('give_payment_gateways', array($this, 'register_gateway'));
-
-      // Load the file only when recurring donations addo-on is enabled.
-			if ( defined( 'GIVE_RECURRING_VERSION' ) ) {
-				require_once GIVE_SENANGPAY_PLUGIN_DIR . 'includes/class-senangpay-recurring.php';
-			}
       
       $this->includes();
     }
@@ -293,6 +288,11 @@ if (!class_exists('Give_SenangPay')):
         include GIVE_SENANGPAY_PLUGIN_DIR . '/includes/admin/give-senangpay-settings-metabox.php';
       }
       include GIVE_SENANGPAY_PLUGIN_DIR . '/includes/give-senangpay-gateway.php';
+
+      // // Load the file only when recurring donations addo-on is enabled.
+      // if ( defined( 'GIVE_RECURRING_VERSION' ) ) {
+      //     include GIVE_SENANGPAY_PLUGIN_DIR . '/includes/class-senangpay-recurring.php';
+      // }
     }
 
     /**
