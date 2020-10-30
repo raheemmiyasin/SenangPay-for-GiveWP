@@ -144,6 +144,9 @@ class Give_Senangpay_Gateway
         give_validate_nonce($purchase_data['gateway_nonce'], 'give-gateway');
 
 
+        //baiki balik nanti, letak ni dekat box senangpay settings dkt admin.
+        $senangpay_prodrecurr_id = '160396611172';
+
         // Check the current payment mode
         $url = 'https://app.senangpay.my/payment';
         $url2 = 'https://api.senangpay.my/recurring/payment/';
@@ -179,7 +182,12 @@ class Give_Senangpay_Gateway
         $amt = $purchase_data['price'];
         $detail = 'This is the transaction of givewp with id of ' . $purchase_data['post_data']['give-form-id'] . ' at ' . $purchase_data['date'] . ' with amount due of RM ' . $amt . '.';
         $order_id = $payment_id; //using give id
-        $hashed_string = md5($senangpay_key['api_key'] . $detail . $amt . $order_id);
+        
+        if(!is_recurring){
+            $hashed_string = md5($senangpay_key['api_key'] . $detail . $amt . $order_id);
+        }else {
+            $hashed_string = hash('sha256', $senangpay_key['api_key'] . $senangpay_prodrecurr_id . $order_id);
+        }
 		
 		// Get the success url.
 		// $return_url = add_query_arg( array(
@@ -189,7 +197,7 @@ class Give_Senangpay_Gateway
  
         $parameter = array(
             'actionUrl' => (!$is_recurring) ? $url . '/' . $senangpay_key['merchant_id'] : $url2 . '/' . $senangpay_key['merchant_id'],
-            'recurring_id' => ($is_recurring) ? '160396611172' : '', //baiki balik nanti, letak ni dekat box senangpay settings dkt admin.
+            'recurring_id' => ($is_recurring) ? $senangpay_prodrecurr_id : '',
             'detail' => $detail,
             'amount' => $amt,
             'order_id' => $order_id, 
@@ -285,6 +293,12 @@ class Give_Senangpay_Gateway
 
             $payment_data = give_get_payment_meta( $payment_id );
             write_log('senangpay payment meta'. print_r($payment_data, true));
+            
+            if($payment_data['_give_is_donation_recurring'] == '1'){
+                $is_recurring = true;
+            }else {
+                $is_recurring = false;
+            }
 
             $custom_donation = give_get_meta($form_id, 'senangpay_customize_senangpay_donations', true, 'global');
             $status = give_is_setting_enabled($custom_donation, 'enabled');
@@ -302,7 +316,11 @@ class Give_Senangpay_Gateway
             // $senangpay_key = $this->get_senangpay(null);
 
             # verify that the data was not tempered, verify the hash
-            $hashed_string = md5($hash_key . urldecode($_GET['status_id']) . urldecode($_GET['order_id']) . urldecode($_GET['transaction_id']) . urldecode($_GET['msg']));
+            if(!$is_recurring){
+                $hashed_string = md5($hash_key . urldecode($_GET['status_id']) . urldecode($_GET['order_id']) . urldecode($_GET['transaction_id']) . urldecode($_GET['msg']));   
+            }else {
+                $hashed_string = hash('sha256', $hash_key . urldecode($_GET['status_id']) . urldecode($_GET['order_id']).urldecode($_GET['transaction_id']).urldecode($_GET['msg']));
+            }
 
             # if hash is the same then we know the data is valid
             if($hashed_string == urldecode($_GET['hash']))

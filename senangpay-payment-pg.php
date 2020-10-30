@@ -24,6 +24,7 @@
 		<input type="text" name="merchant_id" value="<?php echo $_GET['merchant_id'] ?>">
 		<input type="text" name="secretkey" value="<?php echo $_GET['secretkey'] ?>">
 		<input type="text" name="postURL" value="<?php echo $_GET['postURL'] ?>">
+        <input type="text" name="actionUrl" value="<?php echo $_GET['actionUrl'] ?>">
 
 		<input id="submit_btn" type="submit" value="Submit">
 
