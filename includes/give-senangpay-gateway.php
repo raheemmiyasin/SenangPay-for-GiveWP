@@ -155,8 +155,14 @@ class Give_Senangpay_Gateway
 
         $payment_id = $this->create_payment($purchase_data);
 
-        //get subscription data if recurring
-        $subscription_id = ! empty( $get_data['subscription_id'] ) ? intval( $get_data['subscription_id'] ) : false;
+        if($purchase_data['post_data']['_give_is_donation_recurring'] == '1') { //if recurring
+            $is_recurring = true;
+        }else {
+            $is_recurring = false;
+        }
+
+        // //get subscription data if recurring
+        // $subscription_id = ! empty( $get_data['subscription_id'] ) ? intval( $get_data['subscription_id'] ) : false;
 
         // Check payment.
         if (empty($payment_id)) {
@@ -182,8 +188,8 @@ class Give_Senangpay_Gateway
 		// ), get_permalink( give_get_option( 'success_page' ) ) );
  
         $parameter = array(
-            'actionUrl' => (!$subscription_id) ? $url . '/' . $senangpay_key['merchant_id'] : $url2 . '/' . $senangpay_key['merchant_id'],
-            'recurring_id' => ($subscription_id) ? '160396611172' : false, //baiki balik nanti, letak ni dekat box senangpay settings dkt admin.
+            'actionUrl' => (!$is_recurring) ? $url . '/' . $senangpay_key['merchant_id'] : $url2 . '/' . $senangpay_key['merchant_id'],
+            'recurring_id' => ($is_recurring) ? '160396611172' : '', //baiki balik nanti, letak ni dekat box senangpay settings dkt admin.
             'detail' => $detail,
             'amount' => $amt,
             'order_id' => $order_id, 
@@ -202,11 +208,7 @@ class Give_Senangpay_Gateway
         $parameter = apply_filters('give_senangpay_bill_mandatory_param', $parameter, $purchase_data['post_data']);
 
         //send to payment page as params
-        if(!$subscription_id){
-            $payment_page = site_url() . "/senangpay-payment-pg";
-        }else {
-            $payment_page = site_url() . "/senangpay-payment-recurring-pg";
-        }
+        $payment_page = site_url() . "/senangpay-payment-pg";
         
 		write_log('Senangpay in post data ' . print_r($parameter, true));
      
