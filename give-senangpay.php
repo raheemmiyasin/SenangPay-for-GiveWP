@@ -14,6 +14,17 @@ if (!defined('ABSPATH')) {
   exit;
 }
 
+/* Plugin Debugging */
+if (!function_exists('write_log')) {
+    function write_log($log)  {
+       if (is_array($log) || is_object($log)) {
+          error_log(print_r($log, true));
+       } else {
+          error_log($log);
+       }
+    }
+ }
+
 /**
  * Define constants.
  *
@@ -289,10 +300,12 @@ if (!class_exists('Give_SenangPay')):
       }
       include GIVE_SENANGPAY_PLUGIN_DIR . '/includes/give-senangpay-gateway.php';
 
-      // // Load the file only when recurring donations addo-on is enabled.
-      // if ( defined( 'GIVE_RECURRING_VERSION' ) ) {
-      //     include GIVE_SENANGPAY_PLUGIN_DIR . '/includes/class-senangpay-recurring.php';
-      // }
+      // Load the file only when recurring donations addo-on is enabled.
+      if ( defined( 'GIVE_RECURRING_VERSION' ) ) {
+          include GIVE_RECURRING_PLUGIN_DIR . '/includes/gateways/give-recurring-gateway.php';
+          include GIVE_SENANGPAY_PLUGIN_DIR . '/includes/class-senangpay-recurring.php';
+        // write_log('Senangpay in give recurring dir ' . print_r(GIVE_RECURRING_PLUGIN_DIR, true));
+      }
     }
 
     /**

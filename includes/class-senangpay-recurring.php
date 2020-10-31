@@ -109,4 +109,4 @@ class Senangpay_Recurring extends Give_Recurring_Gateway {
 
 }
 
-new MGGI88_Recurring();
+new Senangpay_Recurring();
