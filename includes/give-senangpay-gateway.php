@@ -184,10 +184,13 @@ class Give_Senangpay_Gateway
         $order_id = $payment_id; //using give id
         
         if(!is_recurring){
-            $hashed_string = md5($senangpay_key['api_key'] . $detail . $amt . $order_id);
+            $hashed_string = hash_hmac('sha256', $senangpay_key['api_key'] . $detail . $amt . $order_id, $senangpay_key['api_key']);
         }else {
-            $hashed_string = hash('sha256', $senangpay_key['api_key'] . $senangpay_prodrecurr_id . $order_id);
+            $hashed_string = hash_hmac('sha256', $senangpay_key['api_key'] . $senangpay_prodrecurr_id . $order_id, $senangpay_key['api_key']);
         }
+        // var_dump($senangpay_key['api_key'] . '\n');
+        // var_dump($hashed_string . '\n');
+        // var_dump($is_recurring);
 		
 		// Get the success url.
 		// $return_url = add_query_arg( array(
@@ -317,12 +320,14 @@ class Give_Senangpay_Gateway
 
             # verify that the data was not tempered, verify the hash
             if(!$is_recurring){
-                $hashed_string = md5($hash_key . urldecode($_GET['status_id']) . urldecode($_GET['order_id']) . urldecode($_GET['transaction_id']) . urldecode($_GET['msg']));   
+                $hashed_string = hash_hmac('sha256', $hash_key . urldecode($_GET['status_id']) . urldecode($_GET['order_id']) . urldecode($_GET['transaction_id']) . urldecode($_GET['msg']), $hash_key);
             }else {
-                $hashed_string = hash('sha256', $hash_key . urldecode($_GET['status_id']) . urldecode($_GET['order_id']).urldecode($_GET['transaction_id']).urldecode($_GET['msg']));
+                $hashed_string = hash_hmac('sha256', $hash_key . urldecode($_GET['status_id']) . urldecode($_GET['order_id']).urldecode($_GET['transaction_id']).urldecode($_GET['msg']), $hash_key);
             }
 
             # if hash is the same then we know the data is valid
+            write_log('Hashed String : '.  $hashed_string);
+            write_log('Given Hash Str: '. urldecode($_GET['hash']));
             if($hashed_string == urldecode($_GET['hash']))
             {
                 $data = array(
