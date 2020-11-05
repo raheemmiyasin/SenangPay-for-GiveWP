@@ -115,6 +115,13 @@ class Give_Senangpay_Settings
                 'row_classes' => 'give-senangpay-key',
             ),
             array(
+                'name' => __('Monthly Recurring Id', 'give-senangpay'),
+                'desc' => __('Enter your Monthly Recurring Id, found in your Senangpay Product Settings.', 'give-senangpay'),
+                'id' => 'senangpay_monthly_recurringid',
+                'type' => 'text',
+                'row_classes' => 'give-senangpay-monthlyrecurringid',
+            ),        
+            array(
                 'name' => __('Bill Description', 'give-senangpay'),
                 'desc' => __('Enter description to be included in the bill.', 'give-senangpay'),
                 'id' => 'senangpay_description',

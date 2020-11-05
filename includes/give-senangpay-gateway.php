@@ -58,6 +58,7 @@ class Give_Senangpay_Gateway
 
     public function give_filter_senangpay_gateway($gateway_list, $form_id)
     {
+        write_log('give_filter_senangpay_gateway');
         if ((false === strpos($_SERVER['REQUEST_URI'], '/wp-admin/post-new.php?post_type=give_forms'))
             && $form_id
             && !give_is_setting_enabled(give_get_meta($form_id, 'senangpay_customize_senangpay_donations', true, 'global'), array('enabled', 'global'))
@@ -69,7 +70,7 @@ class Give_Senangpay_Gateway
 
     private function create_payment($purchase_data)
     {
-
+        write_log('create_payment');
         $form_id = intval($purchase_data['post_data']['give-form-id']);
         $price_id = isset($purchase_data['post_data']['give-price-id']) ? $purchase_data['post_data']['give-price-id'] : '';
 
@@ -103,6 +104,7 @@ class Give_Senangpay_Gateway
 
     private function get_senangpay($purchase_data)
     {
+        write_log('get_senangpay');
         //ob_start();
         $form_id = intval($purchase_data['post_data']['give-form-id']);
 
@@ -125,6 +127,7 @@ class Give_Senangpay_Gateway
 
     public static function get_listener_url($payment_id)
     {
+        write_log('get_listener_url');
         $passphrase = get_option(self::LISTENER_PASSPHRASE, false);
         if (!$passphrase) {
             $passphrase = md5(site_url() . time());
@@ -140,6 +143,10 @@ class Give_Senangpay_Gateway
 
     public function process_payment($purchase_data)
     {
+        write_log('process_payment');
+        $get_vars = give_clean( $_GET );
+        write_log('Here is get_varszzz : ' . implode(', ', $get_vars));
+
         // Validate nonce.
         give_validate_nonce($purchase_data['gateway_nonce'], 'give-gateway');
 
@@ -163,13 +170,20 @@ class Give_Senangpay_Gateway
         }
 
         $senangpay_key = $this->get_senangpay($purchase_data);
+        $secret_key = $senangpay_key['api_key'];
+        $merchant_id = $senangpay_key['merchant_id'];
 
+        
         $name = $purchase_data['user_info']['first_name'] . ' ' . $purchase_data['user_info']['last_name'];
-        $amt = $purchase_data['price'];
-        $detail = 'This is the transaction of givewp with id of ' . $purchase_data['post_data']['give-form-id'] . ' at ' . $purchase_data['date'] . ' with amount due of RM ' . $amt . '.';
+        $amt = number_format($purchase_data['price'], 2);
+        $detail = 'Donation_id_'. $payment_id;
         $order_id = $payment_id; //using give id
-        $hashed_string = md5($senangpay_key['api_key'] . $detail . $amt . $order_id);
-		
+        $str = $secret_key. $detail . $amt . $order_id;
+        write_log('Senangpay str ' . print_r($str, true));
+        // $hashed_string = md5($senangpay_key['api_key'] . $detail . $amt . $order_id);
+        $hashed_string = hash_hmac('sha256', $str , $secret_key);
+        //$hashed_string = hash('sha256', $str);
+     
 		// Get the success url.
 		// $return_url = add_query_arg( array(
 		// 	'payment-confirmation' => 'senangpay',
@@ -177,7 +191,7 @@ class Give_Senangpay_Gateway
 		// ), get_permalink( give_get_option( 'success_page' ) ) );
  
         $parameter = array(
-            'actionUrl' => $url . '/' . $senangpay_key['merchant_id'],
+            'actionUrl' => $url . '/' . $merchant_id,
             'detail' => $detail,
             'amount' => $amt,
             'order_id' => $order_id, 
@@ -186,8 +200,8 @@ class Give_Senangpay_Gateway
             'phone' => '+601000000000', //dummy phone number
             'hashed_string' => $hashed_string,
 
-            'merchant_id' => $senangpay_key['merchant_id'],
-            'secretkey' => $senangpay_key['api_key'],
+            'merchant_id' => $merchant_id,
+            'secretkey' => $secret_key,
 
             'postURL' => self::get_listener_url($payment_id),
             //'param'	=> 'GiveWP|' . $payment_id,
@@ -215,7 +229,7 @@ class Give_Senangpay_Gateway
     public function give_senangpay_cc_form($form_id)
     {
         // ob_start();
-
+        write_log('give_senangpay_cc_form');
         $post_senangpay_customize_option = give_get_meta($form_id, 'senangpay_customize_senangpay_donations', true, 'global');
 
         // Enable Default fields (billing info)
@@ -237,11 +251,12 @@ class Give_Senangpay_Gateway
 
     private function publish_payment($payment_id, $data)
     {
+        write_log('publish_payment');
         if ('publish' !== get_post_status($payment_id)) {
-            write_log('senangpay listener success:' . $data['responseDesc']);
-			give_set_payment_transaction_id( $payment_id, $data['authCode'] );
+            write_log('senangpay listener success:' . $data['msg']);
+			give_set_payment_transaction_id( $payment_id, $data['transaction_id'] );
             give_update_payment_status($payment_id, 'publish');
-            give_insert_payment_note($payment_id, "Payment ID: {$data['invno']}. Authorization Code: {$data['authCode']}");
+            give_insert_payment_note($payment_id, "Payment ID: {$payment_id}. Transaction ID: {$data['transaction_id']}");
         }
     }
 
@@ -250,6 +265,7 @@ class Give_Senangpay_Gateway
         // if (!isset($_GET[self::QUERY_VAR])) {
         //     return;
         // }
+        write_log('return_listener');
 
         $passphrase = get_option(self::LISTENER_PASSPHRASE, false);
         if (!$passphrase) {
@@ -264,12 +280,11 @@ class Give_Senangpay_Gateway
         //     exit;
         // }
         if (isset($_GET['status_id']) && isset($_GET['order_id']) && isset($_GET['transaction_id']) && isset($_GET['msg']) && isset($_GET['hash'])) {
-            echo 'test-kejayaan. <br />';
-
             write_log('senangpay listener query'. print_r($_GET, true));
 
             $payment_id = preg_replace('/\D/', '', $_GET['order_id']);
             $form_id = give_get_payment_form_id($payment_id);
+            $transaction_id = urldecode($_GET['transaction_id']);
 
             $payment_data = give_get_payment_meta( $payment_id );
             write_log('senangpay payment meta'. print_r($payment_data, true));
@@ -290,43 +305,101 @@ class Give_Senangpay_Gateway
             // $senangpay_key = $this->get_senangpay(null);
 
             # verify that the data was not tempered, verify the hash
-            $hashed_string = md5($hash_key . urldecode($_GET['status_id']) . urldecode($_GET['order_id']) . urldecode($_GET['transaction_id']) . urldecode($_GET['msg']));
+            // $hashed_string = md5($hash_key . urldecode($_GET['status_id']) . urldecode($_GET['order_id']) . urldecode($_GET['transaction_id']) . urldecode($_GET['msg']));
+            $hashed_string = hash_hmac('sha256', $hash_key . urldecode($_GET['status_id']) . urldecode($_GET['order_id']) . urldecode($_GET['transaction_id']) . urldecode($_GET['msg']), $hash_key);
+
+            $is_recurring = false;
+            // recurring
+            if( isset($payment_data['_give_is_donation_recurring']) && $payment_data['_give_is_donation_recurring'] == 1) {
+                $is_recurring = true;
+                write_log('senangpay recurring');
+                $hashed_string = hash('sha256', $hash_key . urldecode($_GET['status_id']) . urldecode($_GET['order_id']) . urldecode($_GET['transaction_id']) . urldecode($_GET['msg']));
+
+            }
+
+            write_log('local hashed: ' . print_r($hashed_string, true));
+            write_log('senangpay hashed: ' . print_r(urldecode($_GET['hash']), true));
+            
+            $data = array(
+                "msg" => urldecode($_GET['msg']),
+                "transaction_id" => urldecode($_GET['transaction_id'])
+            );
 
             # if hash is the same then we know the data is valid
-            if($hashed_string == urldecode($_GET['hash']))
+            if( $hashed_string == urldecode($_GET['hash']) && urldecode($_GET['status_id']) == 1 )
             {
-                $data = array(
-                    "responseDesc" => urldecode($_GET['msg']),
-                    "authCode" => urldecode($_GET['transaction_id'])
-                );
+                write_log('senangpay hashed validation success');
+                    //recurring  donation
+                    if($is_recurring){
+                        $subscription = give_recurring_get_subscription_by( 'payment', $payment_id );
+                        write_log('senangpay $subscription'. print_r($subscription, true));
 
-                # this is a simple result page showing either the payment was successful or failed. In real life you will need to process the order made by the customer
-                if(urldecode($_GET['status_id']) == '1'){
+                        write_log('senangpay activate recurring donation');
+                        if ( ! $subscription->get_transaction_id() ) {
+                            // This is the initial transaction payment aka first subscription payment.
+                            $subscription->set_transaction_id( $transaction_id );
+        
+                            $args = [
+                                'status'     => 'active',
+                                'profile_id' => $transaction_id,
+                            ];
+                            $subscription->update( $args );
+                            $subscription->complete();
+        
+                        } else {
+                            give_record_gateway_error(
+                                __( 'Error - SenangPay for Give', 'give-senangpay' ),
+                                __( 'Unable to set transaction id for subscription as it is already set.', 'give-senangpay' ),
+                                $donation_id
+                            );
+                        }
+                        
+                        write_log('senangpay renew recurring donation');
+                        $total_donations = $subscription->get_total_payments();
+                        $bill_times = $subscription->bill_times;
+        
+                        if ( $bill_times > $total_donations ) {
+                            $args = array(
+                                'amount'         => $amount,
+                                'transaction_id' => $transaction_id,
+                                'post_date'      => date_i18n( 'Y-m-d H:i:s', current_time( 'timestamp' ) ),
+                            );
+        
+                            // We have a renewal.
+                            $subscription->add_payment( $args );
+                            $subscription->renew();
+                        }
+        
+                        // Complete recurring donation, if total donations and bill times are equal.
+                        if ( $bill_times <= $total_donations ) {
+                            $subscription->complete();
+                        }
+
+                    }
+
+
                     // echo 'Payment was successful with message: '.urldecode($_GET['msg']);
                     $this->publish_payment($payment_id, $data);
                     $return = add_query_arg(array(
                         'payment-confirmation' => 'senangpay',
                         'payment-id' => $payment_id,
                     ), get_permalink(give_get_option('success_page')));
+                    wp_redirect($return);
+                    exit;
                 }
                 else {
                     // echo 'Payment failed with message: '.urldecode($_GET['msg']);
-                    write_log('senangpay failed:'. $data['responseCode'] . $data['responseDesc']);
-                    give_record_gateway_error( __( 'Senangpay Error', 'give' ), sprintf(__( $data['responseDesc'], 'give' ), json_encode( $_REQUEST ) ), $payment_id );
-                    give_set_payment_transaction_id( $payment_id, $data['authCode'] );
+                    write_log('senangpay failed:'. $data['transaction_id'] . $data['msg']);
+                    give_record_gateway_error( __( 'Senangpay Error', 'give' ), sprintf(__( $data['msg'], 'give' ), json_encode( $_REQUEST ) ), $payment_id );
+                    give_set_payment_transaction_id( $payment_id, $data['transaction_id'] );
                     give_update_payment_status( $payment_id, 'failed' );
-                    give_insert_payment_note( $payment_id, __( $data['responseCode'] . ':' . $data['responseDesc'], 'give' ) );
+                    give_insert_payment_note( $payment_id, __( $data['transaction_id'] . ':' . $data['msg'], 'give' ) );
                     $failedUrl = give_get_failed_transaction_uri('?payment-id=' . $payment_id);
                     $failedUrl = str_replace("_wpnonce","_wponce",$failedUrl);
                     $return = $failedUrl;
+                    wp_redirect($return);
+                    exit;
                 }
-            }
-            else
-                echo 'Hashed value is not correct';
-
-            wp_redirect($return);
-            exit;
-
         }else {
             return;
         }
@@ -334,6 +407,7 @@ class Give_Senangpay_Gateway
 
     public function give_senangpay_success_page_content($content)
     {
+        write_log('give_senangpay_success_page_content');
         if ( ! isset( $_GET['payment-id'] ) && ! give_get_purchase_session() ) {
           return $content;
         }
@@ -360,5 +434,7 @@ class Give_Senangpay_Gateway
 
         return $content;
     }
+
+    
 }
 Give_Senangpay_Gateway::get_instance();
