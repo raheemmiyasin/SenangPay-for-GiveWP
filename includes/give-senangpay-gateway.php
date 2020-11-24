@@ -393,11 +393,11 @@ class Give_Senangpay_Gateway
                     give_record_gateway_error( __( 'Senangpay Error', 'give' ), sprintf(__( $data['msg'], 'give' ), json_encode( $_REQUEST ) ), $payment_id );
                     give_set_payment_transaction_id( $payment_id, $data['transaction_id'] );
                     give_update_payment_status( $payment_id, 'failed' );
-                    give_insert_payment_note( $payment_id, __( $data['transaction_id'] . ':' . $data['msg'], 'give' ) );
-                    $failedUrl = give_get_failed_transaction_uri('?payment-id=' . $payment_id);
+                    give_insert_payment_note( $payment_id, __( 'Transaction ID: ' . $data['transaction_id'] . ',' . $data['msg'], 'give' ) );
+                    $failedUrl = give_get_failed_transaction_uri('?payment-id=' . $payment_id . '&error_message=' . $data['msg'] . '&is_recurring=' . $is_recurring);
                     $failedUrl = str_replace("_wpnonce","_wponce",$failedUrl);
-                    $return = $failedUrl;
-                    wp_redirect($return);
+                    write_log('senangpay failed url:'. $failedUrl);
+                    wp_redirect($failedUrl);
                     exit;
                 }
         }else {

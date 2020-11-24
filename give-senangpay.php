@@ -332,6 +332,36 @@ if (!class_exists('Give_SenangPay')):
     }
   }
 
+     // test shortcode
+     function get_senangpay() {
+
+      return 'senangpay shortcode';
+   
+   }
+
+  add_shortcode('senangpay', 'get_senangpay');
+
+  function get_donationfailed_message() {
+
+    $error_message = 'Maaf transaksi tidak berjaya untuk. Sila cuba sekali lagi atau hubungi webmaster. </br>';
+
+    if(isset($_GET['is_recurring']) && $_GET['is_recurring'] == true){
+      $error_message = 'Maaf transaksi tidak berjaya. Sila cuba sekali lagi atau mohon hubungi pihak bank untuk aktifkan fungsi 2D function dan Internet banking function. </br>';
+    }
+
+    if(isset($_GET['payment-id'])) {
+      $error_message = $error_message . 'Donation ID: ' . $_GET['payment-id'];
+    }
+
+    if(isset($_GET['error_message']) && $_GET['is_recurring'] == false) {
+      $error_message = $error_message . ', Mesej Ralat: ' . $_GET['error_message'] . '</br>';
+    }
+    
+    return $error_message;
+
+  }
+
+  add_shortcode('donation-failed-message', 'get_donationfailed_message');
   $GLOBALS['give_senangpay'] = Give_SenangPay::get_instance();
   register_activation_hook(__FILE__, array('Give_SenangPay', 'activation_check'));
 
