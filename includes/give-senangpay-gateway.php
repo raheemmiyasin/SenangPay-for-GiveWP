@@ -178,7 +178,7 @@ class Give_Senangpay_Gateway
 
 
         $name = $purchase_data['user_info']['first_name'] . ' ' . $purchase_data['user_info']['last_name'];
-        $amt = number_format($purchase_data['price'], 2);
+        $amt = $purchase_data['price'];
         $detail = 'Donation_id_' . $payment_id;
         $order_id = $payment_id; //using give id
         $str = $secret_key . $detail . $amt . $order_id;
