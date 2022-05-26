@@ -30,4 +30,4 @@ function give_senangpay_plugin_action_links($actions)
     );
     return array_merge($new_actions, $actions);
 }
-add_filter('plugin_action_links_' . GIVE_MPAY_BASENAME, 'give_senangpay_plugin_action_links');
+add_filter('plugin_action_links_' . GIVE_SENANGPAY_BASENAME, 'give_senangpay_plugin_action_links');
